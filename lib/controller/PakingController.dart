@@ -18,6 +18,22 @@ class ParkingController extends GetxController {
     "4": "-NRdYWXOcd8oWymDLroj",
     // Add other slot keys here...
   };
+
+  RxBool isVipMember = false.obs;
+  // Add this getter method
+  bool get isVIP => isVipMember.value;
+  // Example method to set VIP membership status
+  void setVipMembershipStatus(bool isVip) {
+    isVipMember.value = isVip;
+  }
+
+  // Add this method to simulate a successful payment
+  void paymentDone() {
+    // Here you can add any logic related to marking the payment as done
+    // For now, let's print a message
+    print("Payment done successfully!");
+  }
+
   final DatabaseReference _databaseReference =
       FirebaseDatabase.instance.reference();
 

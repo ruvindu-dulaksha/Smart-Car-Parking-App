@@ -1,13 +1,17 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 
 class MyTextField extends StatelessWidget {
   final String lable;
   final IconData icons;
   final TextEditingController Onchange;
-  const MyTextField({super.key, required this.lable, required this.icons, required this.Onchange});
+  final bool obscureText; // Add the obscureText parameter
+  const MyTextField({
+    Key? key,
+    required this.lable,
+    required this.icons,
+    required this.Onchange,
+    this.obscureText = false, // Default value is set to false
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +20,7 @@ class MyTextField extends StatelessWidget {
         Expanded(
           child: TextFormField(
             controller: Onchange,
+            obscureText: obscureText, // Use the obscureText parameter here
             decoration: InputDecoration(
               prefixIcon: Icon(icons),
               fillColor: Colors.deepPurple.shade200,
@@ -27,7 +32,7 @@ class MyTextField extends StatelessWidget {
               ),
             ),
           ),
-        )
+        ),
       ],
     );
   }
