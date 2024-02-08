@@ -2,20 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:smart_car_parking/controller/PakingController.dart';
+import 'package:smart_car_parking/pages/PayementPage.dart';
 
 import '../../config/colors.dart';
+// Import the payment page
 
 class BookingPage extends StatelessWidget {
   final String slotName;
   final String slotId;
-
   const BookingPage({Key? key, required this.slotId, required this.slotName})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    ParkingController parkingController = Get.put(ParkingController());
-
+    ParkingController parkingController =
+        Get.find<ParkingController>(); // Find the existing controller
     return Scaffold(
       appBar: AppBar(
         backgroundColor: blueColor,
@@ -88,14 +89,14 @@ class BookingPage extends StatelessWidget {
                           hintText: "ZYX Kumar",
                         ),
                       ),
-                    ),
+                    )
                   ],
                 ),
                 SizedBox(height: 30),
                 const Row(
                   children: [
                     Text(
-                      "Enter Vehicle Number ",
+                      "Enter Vehical Number ",
                     )
                   ],
                 ),
@@ -123,7 +124,7 @@ class BookingPage extends StatelessWidget {
                 const Row(
                   children: [
                     Text(
-                      "Choose Slot Time (in Hour)",
+                      "Choose Slot Time (In Hour)",
                     )
                   ],
                 ),
@@ -169,8 +170,8 @@ class BookingPage extends StatelessWidget {
                 SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
+                  children: const [
+                    Text(
                       "Your Slot Name",
                     ),
                   ],
@@ -200,130 +201,71 @@ class BookingPage extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 80),
-                Obx(() {
-                  if (parkingController.isVIP) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
                       children: [
-                        Column(
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                Text("Membership Type: VIP"),
-                              ],
-                            ),
+                            Text("Amount to Be Pay"),
                           ],
                         ),
-                        InkWell(
-                          onTap: () {
-                            // Handle VIP booking logic here
-                            parkingController.bookParkingSlot(slotId);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 60, vertical: 20),
-                            decoration: BoxDecoration(
-                              color: blueColor,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              "BOOK HERE",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
-                    );
-                  } else {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text(
-                          "Your Slot Name",
-                        ),
-                      ],
-                    );
-                  }
-                }),
-                SizedBox(height: 10),
-                Obx(() {
-                  if (parkingController.isVIP) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 100,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: blueColor,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(
-                            child: Text(
-                              slotName,
+                        Row(
+                          children: [
+                            Text(
+                              "Rs",
                               style: TextStyle(
                                 fontSize: 30,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: blueColor,
                               ),
                             ),
-                          ),
+                            Obx(
+                              () => Text(
+                                "${parkingController.parkingAmount.value}",
+                                style: TextStyle(
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.w700,
+                                  color: blueColor,
+                                ),
+                              ),
+                            )
+                          ],
                         ),
                       ],
-                    );
-                  } else {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 100,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: blueColor,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(
-                            child: Text(
-                              slotName,
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        // Calculate amount to pay based on parking time
+                        double amountToPay =
+                            parkingController.parkingAmount.value.toDouble();
+
+                        // Navigate to the payment page
+                        Get.to(() => PaymentPage(
+                              slotId: slotId,
+                              slotName: slotName,
+                              amountToPay: amountToPay,
+                            ));
+                      },
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 60, vertical: 20),
+                        decoration: BoxDecoration(
+                          color: blueColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          "PAY NOW",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
                           ),
                         ),
-                        InkWell(
-                          onTap: () {
-                            // Handle regular booking logic here
-                            parkingController.bookParkingSlot(slotId);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 60, vertical: 20),
-                            decoration: BoxDecoration(
-                              color: blueColor,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              "PAY NOW",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                }),
-                SizedBox(height: 20),
+                      ),
+                    )
+                  ],
+                )
               ],
             ),
           ),

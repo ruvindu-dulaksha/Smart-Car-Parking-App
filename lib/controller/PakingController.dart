@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:smart_car_parking/config/colors.dart';
 import 'package:smart_car_parking/controller/model/car_model.dart';
+import 'package:smart_car_parking/pages/homepage/homepage.dart';
 
 class ParkingController extends GetxController {
   RxList<CarModel> parkingSlotList = <CarModel>[].obs;
@@ -16,21 +17,21 @@ class ParkingController extends GetxController {
     "2": "-NRdYRojJXhw3_aixhnM",
     "3": "--NRdYTO7yp_MbMxjhic3",
     "4": "-NRdYWXOcd8oWymDLroj",
+    "5": "-NRdYWXOcd8oWymDLfslw",
+    "6": "-NRdYWXOcd8oWymDLbnkf",
+    "7": "-NRdYWXOcd8oWymDLase",
+    "8": "-NRdYWXOcd8oWymDLrhe"
     // Add other slot keys here...
   };
 
   RxBool isVipMember = false.obs;
-  // Add this getter method
   bool get isVIP => isVipMember.value;
-  // Example method to set VIP membership status
+
   void setVipMembershipStatus(bool isVip) {
     isVipMember.value = isVip;
   }
 
-  // Add this method to simulate a successful payment
   void paymentDone() {
-    // Here you can add any logic related to marking the payment as done
-    // For now, let's print a message
     print("Payment done successfully!");
   }
 
@@ -40,7 +41,7 @@ class ParkingController extends GetxController {
   RxDouble parkingTimeInMin = 10.0.obs;
   RxInt parkingAmount = 100.obs;
   RxString slotName = "".obs;
-  // int time = 19;
+
   Rx<CarModel> slot1 = CarModel(
     booked: false,
     isParked: false,
@@ -97,11 +98,11 @@ class ParkingController extends GetxController {
     name: "",
     paymentDone: false,
   ).obs;
+
   @override
   void onInit() {
     super.onInit();
     _listenToFirebaseChanges();
-    // Start the default timer for each slot
     _startDefaultTimerForSlots();
   }
 
@@ -114,17 +115,12 @@ class ParkingController extends GetxController {
   }
 
   void _startDefaultTimerForSlot(String slotId) {
-    int defaultParkingTime = 60; // Default time in minutes
-// Start timer for the slot
+    int defaultParkingTime = parkingTimeInMin.value.toInt();
     Timer.periodic(Duration(seconds: 1), (timer) async {
       defaultParkingTime--;
       if (defaultParkingTime == 0) {
-        // Reset Firebase value and local slot value after default parking duration ends
-        await updateFirebaseSlot(
-            slotId, false); // Reset Firebase value to false
-        _updateSlotStatus(slotId, false); // Reset local slot status
-
-        // Cancel the timer when the parking duration ends
+        await updateFirebaseSlot(slotId, false);
+        _updateSlotStatus(slotId, false);
         timer.cancel();
       }
     });
@@ -135,8 +131,6 @@ class ParkingController extends GetxController {
       _databaseReference.child(slotId).onValue.listen((event) {
         var snapshot = event.snapshot;
         var isBooked = snapshot.value as bool;
-
-        // Update the local slot status based on Firebase value changes
         if (isBooked) {
           _updateSlotStatus(slotId, true);
         } else {
@@ -184,411 +178,319 @@ class ParkingController extends GetxController {
           paymentDone: isBooked,
         );
         break;
-      // Add cases for other slot IDs...
+      case "-NRdYWXOcd8oWymDLfslw":
+        slot5.value = CarModel(
+          booked: isBooked,
+          isParked: isBooked,
+          parkingHours: isBooked ? "${parkingTimeInMin.value}" : "",
+          name: isBooked ? "${name.text}" : "",
+          paymentDone: isBooked,
+        );
+        break;
+      case "-NRdYWXOcd8oWymDLbnkf":
+        slot6.value = CarModel(
+          booked: isBooked,
+          isParked: isBooked,
+          parkingHours: isBooked ? "${parkingTimeInMin.value}" : "",
+          name: isBooked ? "${name.text}" : "",
+          paymentDone: isBooked,
+        );
+        break;
+      case "-NRdYWXOcd8oWymDLase":
+        slot7.value = CarModel(
+          booked: isBooked,
+          isParked: isBooked,
+          parkingHours: isBooked ? "${parkingTimeInMin.value}" : "",
+          name: isBooked ? "${name.text}" : "",
+          paymentDone: isBooked,
+        );
+        break;
+      case "-NRdYWXOcd8oWymDLrhe":
+        slot8.value = CarModel(
+          booked: isBooked,
+          isParked: isBooked,
+          parkingHours: isBooked ? "${parkingTimeInMin.value}" : "",
+          name: isBooked ? "${name.text}" : "",
+          paymentDone: isBooked,
+        );
+        break;
       default:
         break;
     }
   }
 
   Future<void> updateFirebaseSlot(String slotId, bool isBooked) async {
-    var slotKey = slotKeys[slotId]; // Retrieve the Firebase key based on slotId
-
+    var slotKey = slotKeys[slotId];
     if (slotKey != null) {
       await _databaseReference.child(slotKey).set(isBooked);
     }
   }
 
   void bookParkingSlot(String slotId) async {
-    // ... existing code remains unchanged ...
-
     if (slotId == "1") {
       await updateFirebaseSlot(slotId, true);
-      slot1Controller();
+      await BookedPopup(slotId);
     } else if (slotId == "2") {
       await updateFirebaseSlot(slotId, true);
-      slot2Controller();
+      await BookedPopup(slotId);
     } else if (slotId == "3") {
       await updateFirebaseSlot(slotId, true);
-      slot3Controller();
+      await BookedPopup(slotId);
     } else if (slotId == "4") {
       await updateFirebaseSlot(slotId, true);
-      slot4Controller();
+      await BookedPopup(slotId);
+    } else if (slotId == "5") {
+      await updateFirebaseSlot(slotId, true);
+      await BookedPopup(slotId);
+    } else if (slotId == "6") {
+      await updateFirebaseSlot(slotId, true);
+      await BookedPopup(slotId);
+    } else if (slotId == "7") {
+      await updateFirebaseSlot(slotId, true);
+      await BookedPopup(slotId);
+    } else if (slotId == "8") {
+      await updateFirebaseSlot(slotId, true);
+      await BookedPopup(slotId);
     }
-    // Add similar update calls for other slots...
-    BookedPopup();
   }
 
-  void slot1Controller() async {
-    slot1.value = CarModel(
-      booked: true,
-      isParked: true,
-      parkingHours: "${parkingTimeInMin.value}",
-      name: "${name.text}",
-      paymentDone: true,
-    );
-
-    int parkingTime = parkingTimeInMin.value.toInt();
-
-    while (parkingTime != 0) {
-      await Future.delayed(
-          Duration(minutes: 1)); // Change the delay to 1 minute
-      parkingTime--;
-      slot1.value.parkingHours = parkingTime.toString();
-      print(parkingTime);
-    }
-
-    // Reset Firebase value and local slot value after parking duration ends
-    await updateFirebaseSlot("1", false); // Reset Firebase value to false
-    slot1.value = CarModel(
-      booked: false,
-      isParked: false,
-      parkingHours: "",
-      name: "",
-      paymentDone: false,
-    );
-    print("Parking Time  ❤️ End ");
-  }
-
-  void slot2Controller() async {
-    slot2.value = CarModel(
-      booked: true,
-      isParked: true,
-      parkingHours: "${parkingTimeInMin.value}",
-      name: "${name.text}",
-      paymentDone: true,
-    );
+  void timeCounter(String slotId) async {
     int parkingTime = parkingTimeInMin.value.toInt();
 
     while (parkingTime != 0) {
       await Future.delayed(Duration(minutes: 1));
       parkingTime--;
-      print(parkingTime);
-      slot2.value.parkingHours = parkingTime.toString();
+
+      _updateParkingTime(slotId, parkingTime);
+
+      if (!_isSlotBooked(slotId)) {
+        break;
+      }
     }
 
-    await updateFirebaseSlot("2", false);
-    slot2.value = CarModel(
-      booked: false,
-      isParked: false,
-      parkingHours: "",
-      name: "",
-      paymentDone: false,
-    );
-    print("Parking Time  ❤️ End ");
+    await updateFirebaseSlot(slotId, false);
+    _updateSlotStatus(slotId, false);
+    print("Parking Time for Slot $slotId ❤️ End ");
   }
 
-  void slot3Controller() async {
-    slot3.value = CarModel(
-      booked: true,
-      isParked: true,
-      parkingHours: "${parkingTimeInMin.value}",
-      name: "${name.text}",
-      paymentDone: true,
-    );
-
-    int parkingTime = parkingTimeInMin.value.toInt();
-
-    while (parkingTime != 0) {
-      await Future.delayed(Duration(minutes: 1));
-      parkingTime--;
-      slot3.value.parkingHours = parkingTime.toString();
-      print(parkingTime);
+  bool _isSlotBooked(String slotId) {
+    switch (slotId) {
+      case "1":
+        return slot1.value?.booked ?? false;
+      case "2":
+        return slot2.value?.booked ?? false;
+      case "3":
+        return slot3.value?.booked ?? false;
+      case "4":
+        return slot4.value?.booked ?? false;
+      case "5":
+        return slot5.value?.booked ?? false;
+      case "6":
+        return slot6.value?.booked ?? false;
+      case "7":
+        return slot7.value?.booked ?? false;
+      case "8":
+        return slot8.value?.booked ?? false;
+      default:
+        return false;
     }
-
-    // Reset Firebase value and local slot value after parking duration ends
-    await updateFirebaseSlot("3", false); // Reset Firebase value to false
-    slot3.value = CarModel(
-      booked: false,
-      isParked: false,
-      parkingHours: "",
-      name: "",
-      paymentDone: false,
-    );
-    print("Parking Time  ❤️ End ");
   }
 
-  void slot4Controller() async {
-    slot4.value = CarModel(
-      booked: true,
-      isParked: true,
-      parkingHours: "${parkingTimeInMin.value}",
-      name: "${name.text}",
-      paymentDone: true,
-    );
+  Future<dynamic> BookedPopup(String slotId) async {
+    String nameText =
+        name.text; // Extracting text from the TextEditingController
+    String vehicalNumberText =
+        vehicalNumber.text; // Extracting text from the TextEditingController
 
-    int parkingTime = parkingTimeInMin.value.toInt();
+    await Future.delayed(Duration(seconds: 1));
+    await updateFirebaseSlot(slotId, true);
+    timeCounter(slotId);
 
-    while (parkingTime != 0) {
-      await Future.delayed(Duration(minutes: 1));
-      parkingTime--;
-      slot4.value.parkingHours = parkingTime.toString();
-      print(parkingTime);
-    }
-
-    // Reset Firebase value and local slot value after parking duration ends
-    await updateFirebaseSlot("4", false); // Reset Firebase value to false
-    slot4.value = CarModel(
-      booked: false,
-      isParked: false,
-      parkingHours: "",
-      name: "",
-      paymentDone: false,
-    );
-    print("Parking Time  ❤️ End ");
-  }
-
-  void slot5Controller() async {
-    slot5.value = CarModel(
-      booked: true,
-      isParked: true,
-      parkingHours: "${parkingTimeInMin.value}",
-      name: "${name.text}",
-      paymentDone: true,
-    );
-    int parkingTime = parkingTimeInMin.value.toInt();
-
-    while (parkingTime != 0) {
-      await Future.delayed(Duration(minutes: 1));
-      parkingTime--;
-      print(parkingTime);
-      slot5.value.parkingHours = parkingTime.toString();
-    }
-
-    slot5.value = CarModel(
-      booked: false,
-      isParked: false,
-      parkingHours: "",
-      name: "",
-      paymentDone: false,
-    );
-    print("Parking Time  ❤️ End ");
-  }
-
-  void slot6Controller() async {
-    slot6.value = CarModel(
-      booked: true,
-      isParked: true,
-      parkingHours: "${parkingTimeInMin.value}",
-      name: "${name.text}",
-      paymentDone: true,
-    );
-    int parkingTime = parkingTimeInMin.value.toInt();
-
-    while (parkingTime != 0) {
-      await Future.delayed(Duration(minutes: 1));
-      parkingTime--;
-      print(parkingTime);
-      slot6.value.parkingHours = parkingTime.toString();
-    }
-
-    slot6.value = CarModel(
-      booked: false,
-      isParked: false,
-      parkingHours: "",
-      name: "",
-      paymentDone: false,
-    );
-    print("Parking Time  ❤️ End ");
-  }
-
-  void slot7Controller() async {
-    slot7.value = CarModel(
-      booked: true,
-      isParked: true,
-      parkingHours: "${parkingTimeInMin.value}",
-      name: "${name.text}",
-      paymentDone: true,
-    );
-    int parkingTime = parkingTimeInMin.value.toInt();
-
-    while (parkingTime != 0) {
-      await Future.delayed(Duration(minutes: 1));
-      parkingTime--;
-      print(parkingTime);
-      slot7.value.parkingHours = parkingTime.toString();
-    }
-
-    slot7.value = CarModel(
-      booked: false,
-      isParked: false,
-      parkingHours: "",
-      name: "",
-      paymentDone: false,
-    );
-    print("Parking Time  ❤️ End ");
-  }
-
-  void slot8Controller() async {
-    slot8.value = CarModel(
-      booked: true,
-      isParked: true,
-      parkingHours: "${parkingTimeInMin.value}",
-      name: "${name.text}",
-      paymentDone: true,
-    );
-    int parkingTime = parkingTimeInMin.value.toInt();
-
-    while (parkingTime != 0) {
-      await Future.delayed(Duration(minutes: 1));
-      parkingTime--;
-      slot8.value.parkingHours = parkingTime.toString();
-      print(parkingTime);
-    }
-
-    slot8.value = CarModel(
-      booked: false,
-      isParked: false,
-      parkingHours: "",
-      name: "",
-      paymentDone: false,
-    );
-    print("Parking Time  ❤️ End ");
-  }
-
-  void timeCounter() {}
-  Future<dynamic> BookedPopup() {
     return Get.defaultDialog(
-        barrierDismissible: false,
-        title: "SLOT BOOKED",
-        titleStyle: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-          color: blueColor,
-        ),
-        content: Column(
-          children: [
-            Lottie.asset(
-              'assets/animation/done1.json',
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  "Your Slot Booked",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: blueColor,
-                  ),
-                )
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.person),
-                SizedBox(width: 5),
-                Text(
-                  "Name : ",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey),
+      barrierDismissible: false,
+      title: "SLOT BOOKED",
+      titleStyle: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w500,
+        color: blueColor,
+      ),
+      content: Column(
+        children: [
+          Lottie.asset(
+            'assets/animation/done1.json',
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text(
+                "Your Slot Booked",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: blueColor,
                 ),
-                SizedBox(width: 20),
-                Text(
-                  name.text,
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
+              )
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.person),
+              SizedBox(width: 5),
+              Text(
+                "Name : ",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+              ),
+              SizedBox(width: 20),
+              Text(
+                nameText, // Using the extracted text
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.car_rental),
+              SizedBox(width: 5),
+              Text(
+                "Vehicle No  : ",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+              ),
+              SizedBox(width: 20),
+              Text(
+                vehicalNumberText, // Using the extracted text
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.watch_later_outlined),
+              SizedBox(width: 5),
+              Text(
+                "Parking time : ",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+              ),
+              SizedBox(width: 20),
+              Obx(() => Text(
+                    _getParkingTime(slotId),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                  )),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.solar_power_outlined),
+              SizedBox(width: 5),
+              Text(
+                "Parking Slot : ",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+              ),
+              SizedBox(width: 20),
+              Text(
+                "A-$slotId",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '₨',
+                style: TextStyle(
+                  fontSize: 30,
+                  color: blueColor,
                 ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.car_rental),
-                SizedBox(width: 5),
-                Text(
-                  "Vehical No  : ",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey),
+              ),
+              Text(
+                parkingAmount.value.toString(),
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w700,
+                  color: blueColor,
                 ),
-                SizedBox(width: 20),
-                Text(
-                  vehicalNumber.text,
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.watch_later_outlined),
-                SizedBox(width: 5),
-                Text(
-                  "Parking time : ",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey),
-                ),
-                SizedBox(width: 20),
-                Text(
-                  parkingTimeInMin.value.toString(),
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.solar_power_outlined),
-                SizedBox(width: 5),
-                Text(
-                  "Parking Slot : ",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey),
-                ),
-                SizedBox(width: 20),
-                Text(
-                  "A-${slotName.value.toString()}",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '₨', // Sri Lanka Rupee symbol
-                  style: TextStyle(
-                    fontSize: 30,
-                    color: blueColor,
-                  ),
-                ),
-                Text(
-                  parkingAmount.value.toString(),
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w700,
-                    color: blueColor,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Get.back();
-              },
-              child: Text("Close"),
-            )
-          ],
-        ));
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              Get.offAll(HomePage());
+            },
+            child: Text("Close"),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _updateParkingTime(String slotId, int parkingTime) {
+    switch (slotId) {
+      case "1":
+        slot1.update((val) {
+          val?.parkingHours = parkingTime.toString();
+        });
+        break;
+      case "2":
+        slot2.update((val) {
+          val?.parkingHours = parkingTime.toString();
+        });
+        break;
+      case "3":
+        slot3.update((val) {
+          val?.parkingHours = parkingTime.toString();
+        });
+        break;
+      case "4":
+        slot4.update((val) {
+          val?.parkingHours = parkingTime.toString();
+        });
+        break;
+      default:
+        break;
+    }
+  }
+
+  String _getParkingTime(String slotId) {
+    switch (slotId) {
+      case "1":
+        return slot1.value.parkingHours ?? "";
+      case "2":
+        return slot2.value.parkingHours ?? "";
+      case "3":
+        return slot3.value.parkingHours ?? "";
+      case "4":
+        return slot4.value.parkingHours ?? "";
+      default:
+        return "";
+    }
   }
 }

@@ -53,9 +53,9 @@ class _SignUpPageState extends State<SignUpPage> {
               children: [
                 // Add the image here
                 Image.asset(
-                  'assets/sign.png', // Replace with your image path
-                  height: 100,
-                  width: 100,
+                  'assets/images/sign.png', // Replace with your image path
+                  height: 250,
+                  width: 250,
                 ),
                 SizedBox(height: 20),
                 MyTextField(

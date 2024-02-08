@@ -15,6 +15,8 @@ Future main() async {
             apiKey: "AIzaSyBwbzHPmbo4uD4RCSOOWKxt04yW8siyZ-U",
             appId: "1:453121552321:web:7b2271b355024c462d4940",
             messagingSenderId: "453121552321",
+            databaseURL:
+                "https://car-parking-53579-default-rtdb.firebaseio.com",
             projectId: "car-parking-53579"));
   }
   await Firebase.initializeApp();
