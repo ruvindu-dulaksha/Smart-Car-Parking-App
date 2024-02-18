@@ -1,19 +1,32 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:smart_car_parking/Data.dart';
 import 'package:smart_car_parking/config/colors.dart';
 import 'package:smart_car_parking/pages/LoginPage.dart';
 import 'package:smart_car_parking/pages/vip_membership_payment_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class AboutUs extends StatelessWidget {
+class AboutUs extends StatefulWidget {
   AboutUs({Key? key}) : super(key: key);
 
+  @override
+  _AboutUsState createState() => _AboutUsState();
+}
+
+class _AboutUsState extends State<AboutUs> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  File? _imageFile; // Initialize with null
+  final picker = ImagePicker();
 
   Future<void> _showDeleteAccountDialog(BuildContext context) async {
+    // Dialog implementation remains the same
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -51,7 +64,7 @@ class AboutUs extends StatelessWidget {
   }
 
   Future<void> _upgradeToVIP(BuildContext context) async {
-    // Navigate to VIP Membership Payment page
+    // Upgrade to VIP logic remains the same
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => VipMembershipPaymentPage()),
@@ -69,9 +82,43 @@ class AboutUs extends StatelessWidget {
     Navigator.popUntil(context, (route) => route.isFirst);
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _imageFile = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  Future<void> _uploadImage() async {
+    User? user = _auth.currentUser; // Move user definition here
+    if (_imageFile != null) {
+      // 1. Upload image to Firebase Storage
+      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      FirebaseStorage storage = FirebaseStorage.instance;
+      Reference reference = storage.ref().child('profile_pictures/$fileName');
+      UploadTask uploadTask = reference.putFile(_imageFile!);
+
+      // Wait for the upload to complete and get the download URL
+      TaskSnapshot taskSnapshot = await uploadTask;
+      String imageUrl = await taskSnapshot.ref.getDownloadURL();
+
+      // 2. Store URL in Firestore
+      if (imageUrl.isNotEmpty) {
+        await _firestore.collection('users').doc(user?.uid).update({
+          'profilePictureUrl': imageUrl,
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    User? user = _auth.currentUser;
+    User? user = _auth.currentUser; // Define user here
 
     return Scaffold(
       appBar: AppBar(
@@ -108,22 +155,31 @@ class AboutUs extends StatelessWidget {
             return Column(
               children: [
                 const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Stack(
+                  alignment: Alignment.bottomRight,
                   children: [
-                    Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(1000),
-                        border: Border.all(
-                          width: 5,
-                          color: Colors.orange.shade600,
-                        ),
-                        image: DecorationImage(
-                          image: AssetImage(profilePath),
-                        ),
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: CircleAvatar(
+                        radius: 80,
+                        backgroundColor: Colors.orange.shade600,
+                        backgroundImage: _imageFile != null
+                            ? FileImage(_imageFile!) as ImageProvider<Object>?
+                            : AssetImage(profilePath),
                       ),
+                    ),
+                    IconButton(
+                      onPressed: _pickImage,
+                      icon: Icon(Icons.edit),
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 30), // Add some space between the icons
+                    IconButton(
+                      onPressed: () {
+                        _uploadImage(); // Call the method to upload the profile picture
+                      },
+                      icon: Icon(Icons.camera_alt),
+                      color: const Color.fromARGB(255, 3, 0, 0),
                     ),
                   ],
                 ),
@@ -237,6 +293,35 @@ class AboutUs extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        // Navigate to edit profile page
+                        // Replace `EditProfilePage` with your actual edit profile page
+                        // Navigator.of(context).push(MaterialPageRoute(builder: (context) => EditProfilePage()));
+                      },
+                      child: Text("Edit Profile"),
+                    ),
+                    const SizedBox(width: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Navigate to purchase history page
+                        // Replace `PurchaseHistoryPage` with your actual purchase history page
+                        // Navigator.of(context).push(MaterialPageRoute(builder: (context) => PurchaseHistoryPage()));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PurchaseHistoryPage(
+                                  userEmail: userData['email'], isVIP: isVIP)),
+                        );
+                      },
+                      child: Text("Purchase History"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                     InkWell(
                       onTap: () async {
                         var url =
@@ -304,6 +389,72 @@ class AboutUs extends StatelessWidget {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class PurchaseHistoryPage extends StatelessWidget {
+  final String userEmail;
+  final bool isVIP;
+
+  const PurchaseHistoryPage({
+    Key? key,
+    required this.userEmail,
+    required this.isVIP,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Purchase History'),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection(isVIP ? 'purchase' : 'receipt')
+            .where('email', isEqualTo: userEmail)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Text('No purchase history found.'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              var data =
+                  snapshot.data!.docs[index].data() as Map<String, dynamic>;
+              Timestamp timestamp =
+                  data['date']; // Assuming 'date' is the Timestamp field
+
+              // Convert Timestamp to DateTime
+              DateTime dateTime = timestamp.toDate();
+
+              // Format the DateTime
+              String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
+
+              return ListTile(
+                title:
+                    Text('Date: $formattedDate, Amount: Rs${data['amount']}'),
+              );
+            },
+          );
+        },
       ),
     );
   }

@@ -12,7 +12,7 @@ Future main() async {
   if (kIsWeb) {
     await Firebase.initializeApp(
         options: FirebaseOptions(
-            apiKey: "AIzaSyBwbzHPmbo4uD4RCSOOWKxt04yW8siyZ-U",
+            apiKey: "AIzaSyBKYGLOp5aPshVQjIwFoB4dCWAwEniE2YE",
             appId: "1:453121552321:web:7b2271b355024c462d4940",
             messagingSenderId: "453121552321",
             databaseURL:

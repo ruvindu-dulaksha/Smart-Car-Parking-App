@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:get/get.dart';
@@ -34,6 +35,8 @@ class _PaymentPageState extends State<PaymentPage> {
 
   // Define your ParkingController
   final ParkingController parkingController = Get.find<ParkingController>();
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   void _showOtpDialog(
     String cardNumber,
@@ -107,7 +110,7 @@ class _PaymentPageState extends State<PaymentPage> {
     String expiryDate,
     String cardHolderName,
     String cvcCode,
-  ) {
+  ) async {
     // Simulate payment success and book parking slot
 
     Get.defaultDialog(
@@ -115,7 +118,14 @@ class _PaymentPageState extends State<PaymentPage> {
       content: Text("Your payment was successful!"),
       actions: [
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
+            // Store payment details in Firestore
+            await _storePaymentDetails(
+              cardNumber,
+              expiryDate,
+              cardHolderName,
+              cvcCode,
+            );
             // Simulate payment success and book parking slot
             parkingController.bookParkingSlot(widget.slotId);
             // Show OTP dialog
@@ -130,6 +140,30 @@ class _PaymentPageState extends State<PaymentPage> {
         ),
       ],
     );
+  }
+
+  Future<void> _storePaymentDetails(
+    String cardNumber,
+    String expiryDate,
+    String cardHolderName,
+    String cvcCode,
+  ) async {
+    // Get current timestamp
+    Timestamp timestamp = Timestamp.now();
+    // Format the timestamp as a string
+    String formattedTimestamp = timestamp.toDate().toString();
+
+    // Store payment details in Firestore
+    await _firestore.collection('payments').add({
+      'cardNumber': cardNumber,
+      'expiryDate': expiryDate,
+      'cardHolderName': cardHolderName,
+      'cvcCode': cvcCode,
+      'slotId': widget.slotId,
+      'slotName': widget.slotName,
+      'amountPaid': widget.amountToPay,
+      'timestamp': formattedTimestamp,
+    });
   }
 
   @override
@@ -158,6 +192,14 @@ class _PaymentPageState extends State<PaymentPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  "Amount to Pay: Rs ${widget.amountToPay}",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 20),
                 CreditCardWidget(
                   cardNumber: _cardNumberController.text,
                   expiryDate: _expiryDateController.text,

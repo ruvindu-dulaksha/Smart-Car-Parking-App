@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,10 @@ import 'package:smart_car_parking/controller/model/car_model.dart';
 import 'package:smart_car_parking/pages/homepage/homepage.dart';
 
 class ParkingController extends GetxController {
+  // Define a userId property
+  RxString userId = ''.obs;
+  RxString membershipType = ''.obs;
+
   RxList<CarModel> parkingSlotList = <CarModel>[].obs;
   TextEditingController name = TextEditingController();
   TextEditingController vehicalNumber = TextEditingController();
@@ -27,10 +32,6 @@ class ParkingController extends GetxController {
   RxBool isVipMember = false.obs;
   bool get isVIP => isVipMember.value;
 
-  void setVipMembershipStatus(bool isVip) {
-    isVipMember.value = isVip;
-  }
-
   void paymentDone() {
     print("Payment done successfully!");
   }
@@ -38,66 +39,84 @@ class ParkingController extends GetxController {
   final DatabaseReference _databaseReference =
       FirebaseDatabase.instance.reference();
 
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   RxDouble parkingTimeInMin = 10.0.obs;
   RxInt parkingAmount = 100.obs;
   RxString slotName = "".obs;
 
-  Rx<CarModel> slot1 = CarModel(
-    booked: false,
-    isParked: false,
-    parkingHours: "",
-    name: "",
-    paymentDone: false,
-  ).obs;
-  Rx<CarModel> slot2 = CarModel(
-    booked: false,
-    isParked: false,
-    parkingHours: "",
-    name: "",
-    paymentDone: false,
-  ).obs;
-  Rx<CarModel> slot3 = CarModel(
-    booked: false,
-    isParked: false,
-    parkingHours: "",
-    name: "",
-    paymentDone: false,
-  ).obs;
-  Rx<CarModel> slot4 = CarModel(
-    booked: false,
-    isParked: false,
-    parkingHours: "",
-    name: "",
-    paymentDone: false,
-  ).obs;
-  Rx<CarModel> slot5 = CarModel(
-    booked: false,
-    isParked: false,
-    parkingHours: "",
-    name: "",
-    paymentDone: false,
-  ).obs;
-  Rx<CarModel> slot6 = CarModel(
-    booked: false,
-    isParked: false,
-    parkingHours: "",
-    name: "",
-    paymentDone: false,
-  ).obs;
-  Rx<CarModel> slot7 = CarModel(
-    booked: false,
-    isParked: false,
-    parkingHours: "",
-    name: "",
-    paymentDone: false,
-  ).obs;
-  Rx<CarModel> slot8 = CarModel(
-    booked: false,
-    isParked: false,
-    parkingHours: "",
-    name: "",
-    paymentDone: false,
-  ).obs;
+  Rx<CarModel> slot1 = Rx<CarModel>(
+    CarModel(
+      booked: false,
+      isParked: false,
+      parkingHours: "",
+      name: "",
+      paymentDone: false,
+    ),
+  );
+  Rx<CarModel> slot2 = Rx<CarModel>(
+    CarModel(
+      booked: false,
+      isParked: false,
+      parkingHours: "",
+      name: "",
+      paymentDone: false,
+    ),
+  );
+  Rx<CarModel> slot3 = Rx<CarModel>(
+    CarModel(
+      booked: false,
+      isParked: false,
+      parkingHours: "",
+      name: "",
+      paymentDone: false,
+    ),
+  );
+  Rx<CarModel> slot4 = Rx<CarModel>(
+    CarModel(
+      booked: false,
+      isParked: false,
+      parkingHours: "",
+      name: "",
+      paymentDone: false,
+    ),
+  );
+  Rx<CarModel> slot5 = Rx<CarModel>(
+    CarModel(
+      booked: false,
+      isParked: false,
+      parkingHours: "",
+      name: "",
+      paymentDone: false,
+    ),
+  );
+  Rx<CarModel> slot6 = Rx<CarModel>(
+    CarModel(
+      booked: false,
+      isParked: false,
+      parkingHours: "",
+      name: "",
+      paymentDone: false,
+    ),
+  );
+  Rx<CarModel> slot7 = Rx<CarModel>(
+    CarModel(
+      booked: false,
+      isParked: false,
+      parkingHours: "",
+      name: "",
+      paymentDone: false,
+    ),
+  );
+  Rx<CarModel> slot8 = Rx<CarModel>(
+    CarModel(
+      booked: false,
+      isParked: false,
+      parkingHours: "",
+      name: "",
+      paymentDone: false,
+    ),
+  );
 
   @override
   void onInit() {
@@ -258,7 +277,7 @@ class ParkingController extends GetxController {
     int parkingTime = parkingTimeInMin.value.toInt();
 
     while (parkingTime != 0) {
-      await Future.delayed(Duration(minutes: 1));
+      await Future.delayed(Duration(hours: 1));
       parkingTime--;
 
       _updateParkingTime(slotId, parkingTime);
@@ -297,14 +316,21 @@ class ParkingController extends GetxController {
   }
 
   Future<dynamic> BookedPopup(String slotId) async {
-    String nameText =
-        name.text; // Extracting text from the TextEditingController
-    String vehicalNumberText =
-        vehicalNumber.text; // Extracting text from the TextEditingController
+    String nameText = name.text;
+    String vehicalNumberText = vehicalNumber.text;
+    DateTime now = DateTime.now();
 
     await Future.delayed(Duration(seconds: 1));
     await updateFirebaseSlot(slotId, true);
     timeCounter(slotId);
+
+    await _firestore.collection('Receipt').add({
+      'name': nameText,
+      'slot_name': 'A-$slotId',
+      'vehicle_number': vehicalNumberText,
+      'amount_to_pay': parkingAmount.value,
+      'date': now,
+    });
 
     return Get.defaultDialog(
       barrierDismissible: false,
@@ -346,7 +372,7 @@ class ParkingController extends GetxController {
               ),
               SizedBox(width: 20),
               Text(
-                nameText, // Using the extracted text
+                nameText,
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -368,7 +394,7 @@ class ParkingController extends GetxController {
               ),
               SizedBox(width: 20),
               Text(
-                vehicalNumberText, // Using the extracted text
+                vehicalNumberText,
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -474,6 +500,26 @@ class ParkingController extends GetxController {
           val?.parkingHours = parkingTime.toString();
         });
         break;
+      case "5":
+        slot5.update((val) {
+          val?.parkingHours = parkingTime.toString();
+        });
+        break;
+      case "6":
+        slot6.update((val) {
+          val?.parkingHours = parkingTime.toString();
+        });
+        break;
+      case "7":
+        slot7.update((val) {
+          val?.parkingHours = parkingTime.toString();
+        });
+        break;
+      case "8":
+        slot8.update((val) {
+          val?.parkingHours = parkingTime.toString();
+        });
+        break;
       default:
         break;
     }
@@ -482,13 +528,22 @@ class ParkingController extends GetxController {
   String _getParkingTime(String slotId) {
     switch (slotId) {
       case "1":
-        return slot1.value.parkingHours ?? "";
+        return slot1.value?.parkingHours ?? "";
       case "2":
-        return slot2.value.parkingHours ?? "";
+        return slot2.value?.parkingHours ?? "";
       case "3":
-        return slot3.value.parkingHours ?? "";
+        return slot3.value?.parkingHours ?? "";
       case "4":
-        return slot4.value.parkingHours ?? "";
+        return slot4.value?.parkingHours ?? "";
+      case "5":
+        return slot5.value?.parkingHours ?? "";
+      case "6":
+        return slot5.value?.parkingHours ?? "";
+      case "7":
+        return slot5.value?.parkingHours ?? "";
+      case "8":
+        return slot5.value?.parkingHours ?? "";
+
       default:
         return "";
     }

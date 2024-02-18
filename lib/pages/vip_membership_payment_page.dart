@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:get/get.dart';
@@ -21,8 +23,8 @@ class _VipMembershipPaymentPageState extends State<VipMembershipPaymentPage> {
   TextEditingController _cvcController = TextEditingController();
   TextEditingController _otpController = TextEditingController();
 
-  // Predefined OTP
   final String predefinedOtp = '123456';
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Initialize FirebaseAuth
 
   void _showOtpDialog() {
     Get.defaultDialog(
@@ -47,7 +49,6 @@ class _VipMembershipPaymentPageState extends State<VipMembershipPaymentPage> {
           SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              // Validate entered OTP
               _validateOtp();
             },
             child: Text("Submit"),
@@ -58,7 +59,6 @@ class _VipMembershipPaymentPageState extends State<VipMembershipPaymentPage> {
   }
 
   void _validateOtp() {
-    // Check if the entered OTP is correct
     if (_otpController.text == predefinedOtp) {
       _processOtp();
     } else {
@@ -73,6 +73,7 @@ class _VipMembershipPaymentPageState extends State<VipMembershipPaymentPage> {
 
   void _processOtp() {
     _showPaymentSuccessDialog();
+    _storePaymentDetails();
   }
 
   void _showPaymentSuccessDialog() {
@@ -88,6 +89,14 @@ class _VipMembershipPaymentPageState extends State<VipMembershipPaymentPage> {
         ),
       ],
     );
+  }
+
+  void _storePaymentDetails() {
+    FirebaseFirestore.instance.collection('purchase').add({
+      'email': _auth.currentUser?.email,
+      'amount': 1500.00, // Hardcoded for now, replace with actual amount
+      'date': DateTime.now(),
+    });
   }
 
   @override
@@ -127,7 +136,7 @@ class _VipMembershipPaymentPageState extends State<VipMembershipPaymentPage> {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "VIP Membership Price: \$1500.00/month",
+                  "VIP Membership Price: \Rs1500.00/month",
                   style: TextStyle(fontSize: 18),
                 ),
                 SizedBox(height: 20),
@@ -138,6 +147,8 @@ class _VipMembershipPaymentPageState extends State<VipMembershipPaymentPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a valid card number';
+                    } else if (value.length != 16) {
+                      return 'Card number must be 16 digits';
                     }
                     return null;
                   },
