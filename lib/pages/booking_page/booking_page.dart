@@ -259,28 +259,26 @@ class BookingPage extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () async {
+                        // Wait for _getMembershipType to complete
                         await _getMembershipType();
                         // Check membership type
-                        String membershipType =
-                            parkingController.membershipType.value;
+                        String membershipType = parkingController.membershipType.value;
                         // Calculate amount to pay based on parking time
-                        double amountToPay =
-                            parkingController.parkingAmount.value.toDouble();
+                        double amountToPay = parkingController.parkingAmount.value.toDouble();
                         // Navigate to payment page for Regular members
                         if (membershipType == 'Regular') {
                           Get.to(() => PaymentPage(
-                                slotId: slotId,
-                                slotName: slotName,
-                                amountToPay: amountToPay,
-                              ));
+                            slotId: slotId,
+                            slotName: slotName,
+                            amountToPay: amountToPay,
+                          ));
                         } else {
                           // Directly book for VIP members
                           parkingController.bookParkingSlot(slotId);
                         }
                       },
                       child: Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 60, vertical: 20),
+                        padding: EdgeInsets.symmetric(horizontal: 60, vertical: 20),
                         decoration: BoxDecoration(
                           color: blueColor,
                           borderRadius: BorderRadius.circular(10),
@@ -295,6 +293,7 @@ class BookingPage extends StatelessWidget {
                         ),
                       ),
                     )
+
                   ],
                 )
               ],

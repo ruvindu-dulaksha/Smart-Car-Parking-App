@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,7 +6,7 @@ import 'package:smart_car_parking/config/colors.dart';
 import 'package:smart_car_parking/pages/homepage/homepage.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  const MapPage({Key? key}) : super(key: key);
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -48,7 +47,6 @@ class _MapPageState extends State<MapPage> {
         actions: [
           IconButton(
               onPressed: () {
-                // parkingController.timeCounter();
                 Get.toNamed("/about-us");
               },
               icon: const Icon(

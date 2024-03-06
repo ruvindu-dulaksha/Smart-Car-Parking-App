@@ -122,16 +122,10 @@ class ParkingController extends GetxController {
   void onInit() {
     super.onInit();
     _listenToFirebaseChanges();
-    _startDefaultTimerForSlots();
+    //_startDefaultTimerForSlots();
   }
 
-  void _startDefaultTimerForSlots() {
-    for (var slotId in slotKeys.values) {
-      if (slotId != null) {
-        _startDefaultTimerForSlot(slotId);
-      }
-    }
-  }
+
 
   void _startDefaultTimerForSlot(String slotId) {
     int defaultParkingTime = parkingTimeInMin.value.toInt();
@@ -152,11 +146,25 @@ class ParkingController extends GetxController {
         var isBooked = snapshot.value as bool;
         if (isBooked) {
           _updateSlotStatus(slotId, true);
+          _startTimerForSlot(slotId); // Start timer for the booked slot
         } else {
           _updateSlotStatus(slotId, false);
         }
       });
     }
+  }
+  void _startTimerForSlot(String slotId) {
+    Timer.periodic(Duration(seconds: 1), (timer) async {
+      int remainingTime = int.tryParse(_getParkingTime(slotId)) ?? 0;
+      remainingTime--;
+      _updateParkingTime(slotId, remainingTime);
+
+      if (remainingTime == 0) {
+        await updateFirebaseSlot(slotId, false);
+        _updateSlotStatus(slotId, false);
+        timer.cancel();
+      }
+    });
   }
 
   void _updateSlotStatus(String slotId, bool isBooked) {
@@ -483,47 +491,72 @@ class ParkingController extends GetxController {
       case "1":
         slot1.update((val) {
           val?.parkingHours = parkingTime.toString();
+          if (parkingTime == 0) {
+            val?.isParked = false; // Set isParked to false when parking time is over
+          }
         });
         break;
       case "2":
         slot2.update((val) {
           val?.parkingHours = parkingTime.toString();
+          if (parkingTime == 0) {
+            val?.isParked = false;
+          }
         });
         break;
       case "3":
         slot3.update((val) {
           val?.parkingHours = parkingTime.toString();
+          if (parkingTime == 0) {
+            val?.isParked = false;
+          }
         });
         break;
       case "4":
         slot4.update((val) {
           val?.parkingHours = parkingTime.toString();
+          if (parkingTime == 0) {
+            val?.isParked = false;
+          }
         });
         break;
       case "5":
         slot5.update((val) {
           val?.parkingHours = parkingTime.toString();
+          if (parkingTime == 0) {
+            val?.isParked = false;
+          }
         });
         break;
       case "6":
         slot6.update((val) {
           val?.parkingHours = parkingTime.toString();
+          if (parkingTime == 0) {
+            val?.isParked = false;
+          }
         });
         break;
       case "7":
         slot7.update((val) {
           val?.parkingHours = parkingTime.toString();
+          if (parkingTime == 0) {
+            val?.isParked = false;
+          }
         });
         break;
       case "8":
         slot8.update((val) {
           val?.parkingHours = parkingTime.toString();
+          if (parkingTime == 0) {
+            val?.isParked = false;
+          }
         });
         break;
       default:
         break;
     }
   }
+
 
   String _getParkingTime(String slotId) {
     switch (slotId) {

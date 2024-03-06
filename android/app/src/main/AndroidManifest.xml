@@ -1,8 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.smart_car_parking">
-<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.INTERNET" /><uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-   <application
+
+    <application
         android:label="smart_car_parking"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

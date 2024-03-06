@@ -412,7 +412,7 @@ class PurchaseHistoryPage extends StatelessWidget {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection(isVIP ? 'purchase' : 'receipt')
+            .collection(isVIP ? 'purchase' : 'Receipt')
             .where('email', isEqualTo: userEmail)
             .snapshots(),
         builder: (context, snapshot) {

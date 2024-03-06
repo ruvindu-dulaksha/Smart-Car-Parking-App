@@ -5,12 +5,14 @@ class MyTextField extends StatelessWidget {
   final IconData icons;
   final TextEditingController Onchange;
   final bool obscureText; // Add the obscureText parameter
+  final String? Function(String? value)? validator; // Add validator function
   const MyTextField({
     Key? key,
     required this.lable,
     required this.icons,
     required this.Onchange,
     this.obscureText = false, // Default value is set to false
+    this.validator, // Validator function
   }) : super(key: key);
 
   @override
@@ -21,6 +23,7 @@ class MyTextField extends StatelessWidget {
           child: TextFormField(
             controller: Onchange,
             obscureText: obscureText, // Use the obscureText parameter here
+            validator: validator, // Use the validator function
             decoration: InputDecoration(
               prefixIcon: Icon(icons),
               fillColor: Colors.deepPurple.shade200,
